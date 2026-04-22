@@ -121,7 +121,7 @@ const receiverUpdate= () => {
         : (!data.bus ? `${data.autoImg}_1920x1080.png` : `${data.bus}`);
         showImgManual.value = !data.manual ? `${data.autoImg}_1920x1080.png` : `${data.manual}`;
         console.log(`manual: ${showImgManual.value}`);
-        showImghafl.value = !`${data.nomal}` || `${data.nomal}` === null ? `${data.autoImg}_1920x480.png` : `${data.nomal}`;
+        showImghafl.value = !data.nomal ? `${data.autoImg}_1920x480.png` : `${data.nomal}`;
         startCheckingFlights();
         console.log(`Name: ${data.name}`);
     });

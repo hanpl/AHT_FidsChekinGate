@@ -65,7 +65,7 @@
 </template>
   
   <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue'
+  import { ref, reactive, onMounted, onUnmounted } from 'vue'
   import { format , parse } from 'date-fns'
   import * as signalR from "@microsoft/signalr";
 
@@ -177,6 +177,9 @@
   };
 
   const intervalId = ref<number | null>(null);
+  const intervalDate = ref<number | null>(null);
+  const intervalCheck = ref<number | null>(null);
+  const intervalFetch = ref<number | null>(null);
 
   const hubConnection = ref<signalR.HubConnection | null>(null);
   const connectHub = async () => {
@@ -233,10 +236,18 @@
     await connectHub()
     await fetchFlights()
     await loadCityMap()
-    getdatefooter;
-    setInterval(getdatefooter, 1000);
-    setInterval(checkCurrentFlight, timeCheckFlight*1000); // Cập nhật chuyến bay mỗi phút
-    setInterval(fetchFlights, timeLoadFlight*1000);  // Gọi API cập nhật flights mỗi 5 phút (300000ms)
+    getdatefooter();
+    intervalDate.value = window.setInterval(getdatefooter, 1000);
+    intervalCheck.value = window.setInterval(checkCurrentFlight, timeCheckFlight * 1000);
+    intervalFetch.value = window.setInterval(fetchFlights, timeLoadFlight * 1000);
+  });
+
+  onUnmounted(() => {
+    if (intervalDate.value) clearInterval(intervalDate.value);
+    if (intervalCheck.value) clearInterval(intervalCheck.value);
+    if (intervalFetch.value) clearInterval(intervalFetch.value);
+    if (intervalId.value) clearInterval(intervalId.value);
+    hubConnection.value?.stop();
   });
 </script>
   

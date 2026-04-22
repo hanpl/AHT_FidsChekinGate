@@ -69,7 +69,7 @@
 
 
 
-  const intervalId = ref<NodeJS.Timeout | null>(null);
+  const intervalRotate = ref<number | null>(null);
   const countries = reactive({
     cityMap: [
         {codeAirport: "BHY",nameAirport: "Beihai",countries: "Trung Quốc"},
@@ -128,9 +128,9 @@ const refetchDataArr = async (rollOn: number,  rollOff: number): Promise<Flight[
 
 
 function groupFlightsByDayWithBreak(flights: Flight[]) {
-  console.log(flights[0].scheduledDate);
+  if (flights.length === 0) return [];
   const result: any[] = []
-  let currentDay = flights.length > 0 ? flights[0].scheduledDate : ''
+  let currentDay = flights[0].scheduledDate
   flights.forEach((flight) => {
     const dateKey = flight.scheduledDate;
     if (dateKey !== currentDay) {
@@ -253,33 +253,29 @@ onMounted(async () => {
 })
 
 function autoRotatePages() {
-  setInterval(() => {
-    currentPage.value = (currentPage.value + 1) % pagedGroupsData.value.length
-  }, pageInterval)
+  if (intervalRotate.value) clearInterval(intervalRotate.value);
+  intervalRotate.value = window.setInterval(() => {
+    const len = pagedGroupsData.value.length;
+    if (len > 0) {
+      currentPage.value = (currentPage.value + 1) % len;
+    }
+  }, pageInterval);
 }
 
 const pagedGroups = computed(() => {
   const pageCount = pagedGroupsData.value.length;
+  if (pageCount === 0) return [];
   if (currentPage.value >= pageCount) {
-    currentPage.value = 0; // Reset về trang đầu nếu vượt quá
+    currentPage.value = 0;
   }
-  console.log("pagedGroupsData.value")
-  console.log(pagedGroupsData.value)
-  console.log(currentPage.value, pagedGroupsData.value[currentPage.value]);
-  return pagedGroupsData.value[currentPage.value]
+  return pagedGroupsData.value[currentPage.value] ?? [];
 });
 
 
 onUnmounted(() => {
-  if (intervalId.value) {
-      clearInterval(intervalId.value);
-      intervalId.value = null;
-  }
-  if (intervalLoadFlights.value) {
-    clearInterval(intervalLoadFlights.value);
-    intervalLoadFlights.value = null;
-  }
-  });
+  if (intervalRotate.value) clearInterval(intervalRotate.value);
+  if (intervalLoadFlights.value) clearInterval(intervalLoadFlights.value);
+});
 
 onBeforeMount(() => {
   loadCityMap();
